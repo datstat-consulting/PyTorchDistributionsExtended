@@ -62,3 +62,13 @@ class laplace_asymmetric(Distribution):
         pos_samples = self.exp_pos.sample(sample_shape)
         neg_samples = self.exp_neg.sample(sample_shape)
         return pos_samples - neg_samples
+
+    def rsample(self, sample_shape=torch.Size()):
+        shape = self._extended_shape(sample_shape)
+        pos_samples = self.exp_pos.rsample(sample_shape)
+        neg_samples = self.exp_neg.rsample(sample_shape)
+        u = torch.rand(shape)
+        return torch.where(u < self.lambda1 / (self.lambda1 + self.lambda2), pos_samples, -neg_samples)
+
+    def _extended_shape(self, sample_shape):
+        return sample_shape + self.lambda1.shape
