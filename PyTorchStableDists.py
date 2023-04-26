@@ -181,7 +181,7 @@ class pareto(StableDistribution):
         u = torch.rand(shape)
         return self.icdf(u)
 
-class Logistic(StableDistribution):
+class logistic(StableDistribution):
     def __init__(self, mu, sigma):
         super().__init__(torch.tensor(1.0), torch.tensor(0.0), mu, sigma)
 
