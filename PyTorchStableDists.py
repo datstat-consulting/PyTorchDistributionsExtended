@@ -208,35 +208,16 @@ class logistic(StableDistribution):
         u = torch.rand(shape)
         return self.icdf(u)
 
-class expon(StableDistribution):
-    def __init__(self, rate):
-        super().__init__(torch.tensor(1.0), torch.tensor(0.0), torch.tensor(0.0), 1 / rate)
-
-    def log_prob(self, value):
-        return torch.log(self.sigma) - self.sigma * value
-
-    def pdf(self, x):
-        return torch.exp(self.log_prob(x))
-
-    def cdf(self, value):
-        return 1 - torch.exp(-self.sigma * value)
-
-    def icdf(self, value):
-        return -torch.log(1 - value) / self.sigma
-
-    def sample(self, sample_shape=torch.Size()):
-        with torch.no_grad():
-            return self.rsample(sample_shape)
-
-    def rsample(self, sample_shape=torch.Size()):
-        shape = self._extended_shape(sample_shape)
-        u = torch.rand(shape)
-        return self.icdf(u)
-
 class t(StableDistribution):
+    arg_constraints = {
+        "nu": constraints.positive,
+        "mu": constraints.real,
+        "sigma": constraints.positive,
+    }
+    support = constraints.real
     def __init__(self, nu, mu, sigma):
         self.nu = torch.as_tensor(nu)
-        super().__init__(torch.tensor(0.5) * nu, torch.tensor(0.0), mu, sigma)
+        super().__init__(None, None, mu, sigma)
 
     def log_prob(self, value):
         z = (value - self.mu) / self.sigma
@@ -247,10 +228,14 @@ class t(StableDistribution):
 
     def cdf(self, value):
         z = (value - self.mu) / self.sigma
-        return torch.distributions.StudentT(self.nu).cdf(z)
+        x = torch.sqrt(self.nu) * z / torch.sqrt(1 + z ** 2)
+        p = 0.5 * (1 + torch.erf(x / math.sqrt(2)))
+        return p
 
     def icdf(self, value):
-        return self.mu + self.sigma * torch.distributions.StudentT(self.nu).icdf(value)
+        x = torch.erfinv(2 * value - 1) * math.sqrt(2)
+        z = torch.sqrt(self.nu) * x / torch.sqrt(self.nu - 2 + x ** 2)
+        return self.mu + self.sigma * z
 
     def sample(self, sample_shape=torch.Size()):
         with torch.no_grad():
@@ -258,6 +243,3 @@ class t(StableDistribution):
 
     def rsample(self, sample_shape=torch.Size()):
         shape = self._extended_shape(sample_shape)
-        u = torch.rand(shape)
-        return self.icdf(u)
-
