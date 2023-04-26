@@ -34,8 +34,8 @@ class laplace_asymmetric(Distribution):
         super().__init__()
         self.lambda1 = lambda1
         self.lambda2 = lambda2
-        self.exp_pos = dist.Exponential(self.lambda1)
-        self.exp_neg = dist.Exponential(self.lambda2)
+        self.exp_pos = expon(self.lambda1)
+        self.exp_neg = expon(self.lambda2)
 
     def log_prob(self, value):
         pos_part = torch.where(value >= 0, self.lambda1 * value, torch.tensor(0.0))
