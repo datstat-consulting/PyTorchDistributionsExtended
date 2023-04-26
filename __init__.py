@@ -1,1 +1,1 @@
-from .PyTorchStableDists import levy, norm, cauchy, LevySkew, SymmetricStable
+from .PyTorchStableDists import StableDistribution, levy, norm, cauchy, LevySkew, SymmetricStable, pareto, expon, logistic, t
