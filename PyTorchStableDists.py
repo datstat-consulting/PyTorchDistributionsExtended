@@ -155,3 +155,109 @@ class SymmetricStable(StableDistribution):
     def icdf(self, value):
         # No closed-form expression for the icdf
         raise NotImplementedError("No closed-form expression for the symmetric stable icdf")
+
+class pareto(StableDistribution):
+    def __init__(self, alpha, xm):
+        super().__init__(alpha, torch.tensor(0.0), xm, alpha * xm)
+
+    def log_prob(self, value):
+        return torch.log(self.alpha) + self.alpha * torch.log(self.mu) - (self.alpha + 1) * torch.log(value)
+
+    def pdf(self, x):
+        return torch.exp(self.log_prob(x))
+
+    def cdf(self, value):
+        return 1 - torch.pow(self.mu / value, self.alpha)
+
+    def icdf(self, value):
+        return self.mu / torch.pow(1 - value, 1 / self.alpha)
+
+    def sample(self, sample_shape=torch.Size()):
+        with torch.no_grad():
+            return self.rsample(sample_shape)
+
+    def rsample(self, sample_shape=torch.Size()):
+        shape = self._extended_shape(sample_shape)
+        u = torch.rand(shape)
+        return self.icdf(u)
+
+class Logistic(StableDistribution):
+    def __init__(self, mu, sigma):
+        super().__init__(torch.tensor(1.0), torch.tensor(0.0), mu, sigma)
+
+    def log_prob(self, value):
+        z = (value - self.mu) / self.sigma
+        return -z - 2 * torch.log(1 + torch.exp(-z))
+
+    def pdf(self, x):
+        return torch.exp(self.log_prob(x))
+
+    def cdf(self, value):
+        z = (value - self.mu) / self.sigma
+        return 1 / (1 + torch.exp(-z))
+
+    def icdf(self, value):
+        return self.mu - self.sigma * torch.log(1 / value - 1)
+
+    def sample(self, sample_shape=torch.Size()):
+        with torch.no_grad():
+            return self.rsample(sample_shape)
+
+    def rsample(self, sample_shape=torch.Size()):
+        shape = self._extended_shape(sample_shape)
+        u = torch.rand(shape)
+        return self.icdf(u)
+
+class expon(StableDistribution):
+    def __init__(self, rate):
+        super().__init__(torch.tensor(1.0), torch.tensor(0.0), torch.tensor(0.0), 1 / rate)
+
+    def log_prob(self, value):
+        return torch.log(self.sigma) - self.sigma * value
+
+    def pdf(self, x):
+        return torch.exp(self.log_prob(x))
+
+    def cdf(self, value):
+        return 1 - torch.exp(-self.sigma * value)
+
+    def icdf(self, value):
+        return -torch.log(1 - value) / self.sigma
+
+    def sample(self, sample_shape=torch.Size()):
+        with torch.no_grad():
+            return self.rsample(sample_shape)
+
+    def rsample(self, sample_shape=torch.Size()):
+        shape = self._extended_shape(sample_shape)
+        u = torch.rand(shape)
+        return self.icdf(u)
+
+class t(StableDistribution):
+    def __init__(self, nu, mu, sigma):
+        self.nu = torch.as_tensor(nu)
+        super().__init__(torch.tensor(0.5) * nu, torch.tensor(0.0), mu, sigma)
+
+    def log_prob(self, value):
+        z = (value - self.mu) / self.sigma
+        return torch.lgamma((self.nu + 1) / 2) - torch.lgamma(self.nu / 2) - 0.5 * torch.log(self.nu * torch.tensor(math.pi)) - torch.log(self.sigma) - ((self.nu + 1) / 2) * torch.log(1 + z ** 2 / self.nu)
+
+    def pdf(self, x):
+        return torch.exp(self.log_prob(x))
+
+    def cdf(self, value):
+        z = (value - self.mu) / self.sigma
+        return torch.distributions.StudentT(self.nu).cdf(z)
+
+    def icdf(self, value):
+        return self.mu + self.sigma * torch.distributions.StudentT(self.nu).icdf(value)
+
+    def sample(self, sample_shape=torch.Size()):
+        with torch.no_grad():
+            return self.rsample(sample_shape)
+
+    def rsample(self, sample_shape=torch.Size()):
+        shape = self._extended_shape(sample_shape)
+        u = torch.rand(shape)
+        return self.icdf(u)
+
