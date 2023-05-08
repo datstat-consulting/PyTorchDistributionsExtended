@@ -1,3 +1,7 @@
+"""
+Разработанный Адриелу Ванг от ДанСтат Консульти́рования
+"""
+
 import torch
 import math
 from torch.distributions import Distribution, constraints
