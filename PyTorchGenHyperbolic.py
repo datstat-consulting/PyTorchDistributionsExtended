@@ -1,3 +1,7 @@
+"""
+Разработанный Адриелу Ванг от ДанСтат Консульти́рования
+"""
+
 import torch
 from torch import exp, log
 from scipy.special import kv
