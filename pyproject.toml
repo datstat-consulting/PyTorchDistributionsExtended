@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyTorchDistributionsExtended"
+version = "0.2.0"
+description = "Extra torch-native distributions and a numerical SciPy catalog"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+dependencies = ["torch>=2.1", "scipy", "numpy"]
+
+[tool.setuptools]
+packages = ["PyTorchDistributionsExtended"]
+
+[tool.setuptools.package-dir]
+PyTorchDistributionsExtended = "."
